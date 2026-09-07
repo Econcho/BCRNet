@@ -1,0 +1,32 @@
+# Full first-version model; all unspecified typed fields use ModelConfig defaults.
+model:
+  num_classes: 1
+  budget: 16
+  core_size: 8
+  halo: 4
+  width: 64
+  use_detail: true
+  use_context: true
+  use_tiny: true
+  refiner_type: attention
+  default_mode: full
+preprocessing:
+  image_size: 640
+  mean: [0.485, 0.456, 0.406]
+  std: [0.229, 0.224, 0.225]
+training:
+  epochs: 100
+  batch_size: 2
+  seed: 42
+  amp: true
+  amp_init_scale: 16
+  lr: 0.001
+  weight_decay: 0.01
+  grad_clip: 10.0
+  probe_probability: 0.1
+  stage_lr_multipliers: {A: 1.0, B: 0.5, C: 1.0, D: 0.1}
+loss:
+  base_weight: 0.5
+  tiny_weight: 0.2
+  utility_weight: 0.1
+  residual_weight: 0.0001

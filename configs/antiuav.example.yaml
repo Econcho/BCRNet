@@ -1,0 +1,10 @@
+type: antiuav_rgb
+# Relative root is resolved against this YAML file, not the process working directory.
+root: ../data/antiuav_rgb
+splits:
+  train: annotations/train.json
+  val: annotations/val.json
+  test: annotations/test.json
+options:
+  horizontal_flip: 0.5
+

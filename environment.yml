@@ -1,0 +1,8 @@
+name: bcrnet
+channels:
+  - defaults
+dependencies:
+  - python=3.11
+  - pip
+# Install the hardware-specific PyTorch wheels first; see docs/环境与快速开始.md.
+# Then: python -m pip install -e ".[data,dev]"

@@ -1,0 +1,18 @@
+# Small synthetic engineering check, not an accuracy experiment.
+model:
+  stem_channels: 8
+  backbone_channels: [16, 24, 32, 48]
+  backbone_depths: [1, 1, 1, 1]
+  width: 16
+  heads: 4
+  budget: 2
+preprocessing:
+  image_size: [64, 96]
+training:
+  epochs: 4
+  batch_size: 2
+  seed: 42
+  amp: false
+  lr: 0.001
+  probe_probability: 1.0
+
