@@ -11,7 +11,10 @@ data/
 *.onnx
 *.partial
 .pytest-check*/
+.pytest-execution*/
 .test_tmp/
+build/
+dist/
 docs/
 README.md
 .workbuddy/
