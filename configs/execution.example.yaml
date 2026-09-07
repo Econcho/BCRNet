@@ -1,0 +1,10 @@
+# Independent of configs/bcrnet.yaml and checkpoint parameters.
+# Load with ExecutionConfig.from_dict(load_yaml(...)).
+strategy: packed
+attention_backend: auto
+key_tile: 64
+overlap_threshold: 1.4
+minimum_references: 512
+policy_path: null
+trace: false
+reuse_feature_masks: false

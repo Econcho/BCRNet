@@ -120,6 +120,10 @@ class BCRNet(nn.Module):
         refined = torch.where(cmask, refined, base)
         return RefinementOutput(indices, base, refined, residual.reshape(b, k, -1, c, c), cmask)
 
+    def merge_refinement(self, base_p2, refinement):
+        """Execution adapters may reuse addresses while preserving the default delta scatter."""
+        return scatter_cores(base_p2, refinement.refined_logits, refinement.indices, self.config.core_size)
+
     def forward(
         self,
         images,
@@ -163,7 +167,5 @@ class BCRNet(nn.Module):
         out.routing = routing
         if indices.shape[1]:
             out.refinement = self.refine_windows(features, masks, base["p2"], indices)
-            out.predictions["p2"] = scatter_cores(
-                base["p2"], out.refinement.refined_logits, indices, self.config.core_size
-            )
+            out.predictions["p2"] = self.merge_refinement(base["p2"], out.refinement)
         return out

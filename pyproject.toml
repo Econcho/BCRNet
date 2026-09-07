@@ -19,6 +19,9 @@ bcrnet = "bcrnet.cli:main"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+"bcrnet.execution" = ["kernels/*.cu"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra"

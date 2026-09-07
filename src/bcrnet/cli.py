@@ -75,6 +75,8 @@ def parser():
     pred.add_argument("--image", required=True, help="One RGB image")
     pred.add_argument("--output", required=True, help="New or empty result directory")
     pred.add_argument("--score", type=float, default=0.25)
+    for p in (ev, pred):
+        p.add_argument("--execution-config", help="Optional YAML for the inference execution adapter")
     bench = sub.add_parser("benchmark")
     bench.add_argument("--config", required=True)
     bench.add_argument("--checkpoint")
@@ -98,10 +100,19 @@ def new_output_directory(path):
     return path
 
 
+def apply_execution(model, config_path):
+    if not config_path:
+        return model
+    from .execution import ExecutionBCRNet, ExecutionConfig
+
+    return ExecutionBCRNet(model.eval(), ExecutionConfig.from_dict(load_yaml(config_path)))
+
+
 @torch.no_grad()
 def run_evaluate(args):
     device = select_device(args.device)
     model, ckpt = load_model(args.checkpoint, device)
+    model = apply_execution(model, args.execution_config)
     dataset, loader = make_loader(
         dataset_config(args.data),
         args.split,
@@ -113,6 +124,8 @@ def run_evaluate(args):
         raise ValueError("Checkpoint/dataset category mapping mismatch")
     output = new_output_directory(args.output)
     metrics, predictions = evaluate(model, loader, dataset, device, args.mode, args.max_batches)
+    if args.execution_config:
+        metrics["execution_config"] = load_yaml(args.execution_config)
     write_json(output / "metrics.json", metrics)
     write_json(output / "detections.json", predictions)
     print(json.dumps(metrics, indent=2))
@@ -122,6 +135,7 @@ def run_evaluate(args):
 def predict(args):
     device = select_device(args.device)
     model, ckpt = load_model(args.checkpoint, device)
+    model = apply_execution(model, args.execution_config)
     model.eval()
     prep = dict(ckpt["preprocessing"])
     prep["size"] = prep.pop("image_size", 640)
@@ -138,6 +152,8 @@ def predict(args):
     rows = {key: value.cpu().tolist() for key, value in result.items()}
     rows["categories"] = ckpt["categories"]
     rows["image"] = str(Path(args.image).resolve())
+    if args.execution_config:
+        rows["execution"] = model.last_execution
     write_json(output / "prediction.json", rows)
     draw = ImageDraw.Draw(original)
     for box, score, label in zip(rows["boxes"], rows["scores"], rows["labels"]):
