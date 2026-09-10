@@ -34,6 +34,7 @@ def environment(args):
         "device": args.device,
         "gpu": torch.cuda.get_device_name(args.device) if torch.device(args.device).type == "cuda" else None,
         "amp": args.amp,
+        "execution_enabled": args.execution_enabled,
         "reuse_feature_masks": args.reuse_feature_masks,
         "attention_backend": args.attention_backend,
         "input_shape": [args.batch_size, 3, *spatial_shape],
@@ -46,6 +47,7 @@ def executor(source, name, args, *, trace=False):
     return ExecutionBCRNet(
         source,
         ExecutionConfig(
+            enabled=args.execution_enabled,
             strategy=name,
             attention_backend=args.attention_backend,
             overlap_threshold=args.overlap_threshold,
@@ -229,7 +231,7 @@ def audit(args):
                 boxes = target["boxes"]
                 tiny = bool(
                     len(boxes)
-                    and ((boxes[:, 2:] - boxes[:, :2]).amax(1) < source.config.tiny_threshold).any()
+                    and ((boxes[:, 2:] - boxes[:, :2]).prod(1).sqrt() < source.config.tiny_threshold).any()
                 )
                 rows.append(
                     {
@@ -246,6 +248,11 @@ def audit(args):
         "split": args.split,
         "checkpoint": str(Path(args.checkpoint).resolve()),
         "dataset": str(config_path),
+        "tiny_definition": {
+            "measure": "sqrt(box_area) in model input coordinates",
+            "threshold": source.config.tiny_threshold,
+            "comparison": "strictly_less",
+        },
         "environment": environment(args),
         "rows": rows,
         "tensor_checks": checks,
@@ -342,6 +349,12 @@ def main():
         child.add_argument("--batch-size", type=int, default=1)
         child.add_argument("--seed", type=int, default=42)
         child.add_argument("--amp", action="store_true")
+        child.add_argument(
+            "--execution-enabled",
+            action=argparse.BooleanOptionalAction,
+            default=True,
+            help="Enable the optional operator/graph execution optimization (use --no-execution-enabled to disable)",
+        )
         child.add_argument("--attention-backend", default="auto")
         child.add_argument("--overlap-threshold", type=float, default=1.4)
         child.add_argument("--policy")

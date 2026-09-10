@@ -105,7 +105,10 @@ def apply_execution(model, config_path):
         return model
     from .execution import ExecutionBCRNet, ExecutionConfig
 
-    return ExecutionBCRNet(model.eval(), ExecutionConfig.from_dict(load_yaml(config_path)))
+    execution = ExecutionConfig.from_dict(load_yaml(config_path))
+    if not execution.enabled:
+        return model
+    return ExecutionBCRNet(model.eval(), execution)
 
 
 @torch.no_grad()
@@ -153,7 +156,11 @@ def predict(args):
     rows["categories"] = ckpt["categories"]
     rows["image"] = str(Path(args.image).resolve())
     if args.execution_config:
-        rows["execution"] = model.last_execution
+        rows["execution"] = getattr(
+            model,
+            "last_execution",
+            {"enabled": False, "strategy": "skipped", "reason": "config_disabled"},
+        )
     write_json(output / "prediction.json", rows)
     draw = ImageDraw.Draw(original)
     for box, score, label in zip(rows["boxes"], rows["scores"], rows["labels"]):

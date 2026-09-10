@@ -53,6 +53,24 @@ src/bcrnet/
   evaluation.py             COCO AP、负帧误报、窗口覆盖
   checkpoint.py             版本化 checkpoint、随机状态
   profiling.py              已执行算子的 MAC 统计
+  execution/                可选索引感知执行层：计划、共享上下文、索引注意力和策略实验
   cli.py                    命令行
 configs/  scripts/  tests/  docs/  # scripts includes Anti-UAV extraction and DUT VOC→COCO conversion
+```
+
+## 可选执行优化
+
+执行层保持 BCRNet 的权重、路由和预测定义不变，只替换推理阶段的局部细化执行方式。通过
+`configs/execution.example.yaml` 中的 `enabled` 开关控制：`true` 启用执行优化，`false` 完全回到原始
+BCRNet 推理路径。省略 `--execution-config` 也不会启用执行适配器。
+
+```powershell
+# 原始 BCRNet 路径
+python -m bcrnet predict --checkpoint runs/dut_full/best.pt --image sample.jpg --output runs/predict_reference
+
+# 启用 packed 执行
+python -m bcrnet predict --checkpoint runs/dut_full/best.pt --image sample.jpg --execution-config configs/execution.example.yaml --output runs/predict_packed
+
+# 使用执行层 CLI 做基准，但关闭优化开关
+python -m bcrnet.execution benchmark --config configs/bcrnet.yaml --no-execution-enabled --output runs/execution_disabled.json
 ```

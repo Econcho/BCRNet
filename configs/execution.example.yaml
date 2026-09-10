@@ -1,5 +1,6 @@
 # Independent of configs/bcrnet.yaml and checkpoint parameters.
 # Load with ExecutionConfig.from_dict(load_yaml(...)).
+enabled: true
 strategy: packed
 attention_backend: auto
 key_tile: 64

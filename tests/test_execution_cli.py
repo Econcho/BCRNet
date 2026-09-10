@@ -153,3 +153,12 @@ def test_benchmark_calibration_and_coco_audit(tmp_path, cfg, monkeypatch):
     predict(args)
     prediction = json.loads((prediction_dir / "prediction.json").read_text())
     assert prediction["execution"]["strategy"] == "packed"
+
+
+def test_top_level_execution_config_can_disable_adapter(tmp_path, cfg):
+    from bcrnet.cli import apply_execution
+
+    config = tmp_path / "execution-disabled.yaml"
+    config.write_text("enabled: false\nstrategy: indexed\n", encoding="utf-8")
+    model = BCRNet(cfg).eval()
+    assert apply_execution(model, config) is model

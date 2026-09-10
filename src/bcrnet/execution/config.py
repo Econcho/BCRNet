@@ -5,6 +5,11 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class ExecutionConfig:
+    # The explicit safety switch keeps the reference BCRNet path available for
+    # ablations, debugging, and environments where the optional execution
+    # backend is unavailable.  It is intentionally independent of model
+    # weights and learned ModelConfig fields.
+    enabled: bool = True
     strategy: str = "packed"
     attention_backend: str = "auto"
     key_tile: int = 64
@@ -15,6 +20,8 @@ class ExecutionConfig:
     reuse_feature_masks: bool = False
 
     def __post_init__(self):
+        if not isinstance(self.enabled, bool):
+            raise TypeError("enabled must be a boolean")
         if self.strategy not in {"reference", "packed", "shared", "indexed", "adaptive"}:
             raise ValueError(f"Unknown execution strategy: {self.strategy}")
         if self.attention_backend not in {"auto", "sdpa", "torch_indexed", "cuda_indexed"}:

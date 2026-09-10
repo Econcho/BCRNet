@@ -104,6 +104,26 @@ def test_dummy_zero_budget_fallback_and_state(cfg):
         optimized.eval()(x, mode="custom", window_indices=torch.tensor([[0, 0], [1, 1]]))
 
 
+def test_disabled_execution_switch_is_reference_path(cfg):
+    base = BCRNet(cfg).eval()
+    disabled = ExecutionBCRNet(
+        base,
+        ExecutionConfig(enabled=False, strategy="indexed", reuse_feature_masks=True),
+    ).eval()
+    images = torch.randn(2, 3, 64, 96)
+    mask = torch.ones(2, 1, 64, 96, dtype=torch.bool)
+    with torch.inference_mode():
+        expected = base(images, mask)
+        actual = disabled(images, mask)
+    for key in expected.predictions:
+        torch.testing.assert_close(expected.predictions[key], actual.predictions[key], atol=0, rtol=0)
+    assert disabled.last_execution == {
+        "enabled": False,
+        "strategy": "reference",
+        "reason": "disabled",
+    }
+
+
 def test_plan_scatter_reordered_and_sentinel(cfg):
     features = {"e2": torch.randn(2, cfg.width, 16, 24), "e3": torch.randn(2, cfg.width, 8, 12)}
     indices = torch.tensor([[5, -1, 0], [-1, 4, 2]])

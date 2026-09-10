@@ -76,11 +76,15 @@ class ExecutionBCRNet(BCRNet):
         self.last_execution = None
         output = super().forward(*args, **kwargs)
         if self.last_execution is None:
-            self.last_execution = {"strategy": "skipped", "reason": "mode_or_zero_budget"}
+            self.last_execution = {
+                "enabled": self.execution.enabled,
+                "strategy": "skipped",
+                "reason": "disabled" if not self.execution.enabled else "mode_or_zero_budget",
+            }
         return output
 
     def extract_features(self, images, valid_mask=None):
-        if not self.execution.reuse_feature_masks:
+        if not self.execution.enabled or not self.execution.reuse_feature_masks:
             return super().extract_features(images, valid_mask)
         # Conventional strong-baseline optimization; same pooling definition, once per H/W.
         if images.ndim != 4 or images.shape[1] != 3 or not images.is_floating_point():
@@ -107,14 +111,20 @@ class ExecutionBCRNet(BCRNet):
     def refine_windows(self, features, masks, base_p2, indices):
         requested = self.execution.strategy
         fallback = None
-        if self.training or torch.is_grad_enabled():
+        if not self.execution.enabled:
+            fallback = "disabled"
+        elif self.training or torch.is_grad_enabled():
             fallback = "training_or_grad_enabled"
         elif not self._compatible():
             fallback = "custom_reader_refiner_or_conv_ablation"
         elif indices.numel() == 0:
             fallback = "empty_selection"
         if requested == "reference" or fallback:
-            self.last_execution = {"strategy": "reference", "reason": fallback or "requested"}
+            self.last_execution = {
+                "enabled": self.execution.enabled,
+                "strategy": "reference",
+                "reason": fallback or "requested",
+            }
             return super().refine_windows(features, masks, base_p2, indices)
         with self.scope("choose"):
             strategy, decision = (
@@ -160,6 +170,7 @@ class ExecutionBCRNet(BCRNet):
             refined = self.head(bank.core + residual).reshape(b, k, -1, c, c)
             refined = torch.where(cmask, refined, base)
         self.last_execution = {
+            "enabled": True,
             "requested": requested,
             "strategy": strategy,
             "backend": backend,
