@@ -1,0 +1,48 @@
+# Every extraction choice that can affect the dataset is explicit and is saved
+# to conversion_report.json. CLI arguments override values in this file.
+extraction:
+  source_root: F:/antiuav/main_workspace/Anti-UAV-RGBT
+  output_root: F:/antiuav/TSCRNet/BCRNet-main/data/antiuav_rgb_official_v1
+
+  # Raw Anti-UAV layout. This project uses visible RGB only.
+  source_splits: [train, val, test]
+  video_name: visible.mp4
+  annotation_name: visible.json
+  attribute_dir_name: label_new
+  include_attributes: true
+  bbox_format: xywh
+
+  # official keeps the source split; group re-splits train+val by recording;
+  # custom requires split_map, a JSON object keyed by source_split/sequence.
+  split_policy: official
+  split_map: null
+  val_fraction: 0.2
+  seed: 42
+
+  # Frame sampling. null means inherit train_stride or eval_stride.
+  train_stride: 5
+  positive_stride: null
+  negative_stride: null
+  tiny_densification: true
+  tiny_stride: 2
+  tiny_threshold: 16.0
+  reference_size: 640
+  transition_sampling: true
+  transition_radius: 2
+  max_train_frames: 400  # 0 disables the per-sequence cap.
+  negative_fraction_at_cap: 0.25
+  phase_policy: hashed
+  eval_stride: 1
+  val_stride: null
+  test_stride: null
+
+  # Export and annotation handling.
+  image_format: jpg
+  jpeg_quality: 95
+  png_compression: 3
+  category_id: 1
+  category_name: drone
+  supercategory: uav
+  invalid_box_policy: skip
+  clipped_box_policy: skip
+  dry_run: false

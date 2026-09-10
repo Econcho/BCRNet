@@ -12,7 +12,7 @@ from PIL import Image, ImageDraw
 from .checkpoint import load_model
 from .config import ModelConfig, load_yaml
 from .data.transforms import Letterbox
-from .engine import dataset_config, make_loader, select_device, train, write_json
+from .engine import MONITOR_METRICS, dataset_config, make_loader, select_device, train, write_json
 from .evaluation import evaluate
 from .inference import postprocess
 from .models.detector import BCRNet, ForwardMode
@@ -34,6 +34,33 @@ def parser():
     fit.add_argument("--resume")
     fit.add_argument("--weights")
     fit.add_argument("--stop-after-epochs", type=int)
+    fit.add_argument(
+        "--val-interval",
+        type=int,
+        help="Validate every N epochs; the final epoch and stage transitions are always validated",
+    )
+    fit.add_argument(
+        "--patience",
+        type=int,
+        help="Early-stopping patience in validation events; zero disables early stopping",
+    )
+    fit.add_argument(
+        "--min-delta", type=float, help="Minimum monitored-metric improvement for early stopping"
+    )
+    fit.add_argument(
+        "--monitor", choices=MONITOR_METRICS, help="Validation metric used for best.pt and early stopping"
+    )
+    fit.add_argument(
+        "--early-stop-stage",
+        choices=["A", "B", "C", "D"],
+        help="Stage where early stopping becomes active; defaults to D for all-stage training",
+    )
+    fit.add_argument(
+        "--progress",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="Show a live tqdm batch/epoch progress bar (configurable in training.progress)",
+    )
     ev = sub.add_parser("evaluate")
     ev.add_argument("--checkpoint", required=True)
     ev.add_argument("--data", required=True)

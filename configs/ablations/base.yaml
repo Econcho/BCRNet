@@ -1,4 +1,3 @@
-# Full first-version model; all unspecified typed fields use ModelConfig defaults.
 model:
   num_classes: 1
   budget: 16
@@ -7,9 +6,9 @@ model:
   width: 64
   use_detail: true
   use_context: true
-  use_tiny: true
+  use_tiny: false
   refiner_type: attention
-  default_mode: full
+  default_mode: base
 preprocessing:
   image_size: 640
   mean: [0.485, 0.456, 0.406]

@@ -1,0 +1,10 @@
+# This file is a template only. The converter writes a ready-to-use data.yaml
+# under DUT_coco_reference or DUT_coco_copy. Prefer that generated file.
+type: coco
+root: F:/antiuav/dataset/DUT
+splits:
+  train: F:/antiuav/dataset/DUT_coco_reference/annotations/train.json
+  val: F:/antiuav/dataset/DUT_coco_reference/annotations/val.json
+  test: F:/antiuav/dataset/DUT_coco_reference/annotations/test.json
+options:
+  horizontal_flip: 0.5

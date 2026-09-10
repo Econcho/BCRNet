@@ -50,6 +50,46 @@ def test_sampling_and_recording_split():
         assign_splits(pairs + [("test", "a_1_3")], "group")
 
 
+def test_sampling_ablation_controls_and_custom_split():
+    rows = [FrameLabel(i, i < 10, (0, 0, 4, 4) if i < 10 else None) for i in range(20)]
+    cfg = SamplingConfig(
+        positive_stride=2,
+        negative_stride=5,
+        val_stride=3,
+        test_stride=4,
+        tiny_densification=False,
+        transition_sampling=False,
+        max_train_frames=0,
+        phase_policy="zero",
+    )
+    assert sample_frame_indices(rows, 64, 64, "train", "sequence", cfg) == [0, 2, 4, 6, 8, 10, 15]
+    assert sample_frame_indices(rows, 64, 64, "val", "sequence", cfg) == [0, 3, 6, 9, 12, 15, 18]
+    assert sample_frame_indices(rows, 64, 64, "test", "sequence", cfg) == [0, 4, 8, 12, 16]
+
+    pairs = [("train", "a"), ("val", "b"), ("test", "c")]
+    mapping = {"train/a": "val", "val/b": "train", "test/c": "test"}
+    assert assign_splits(pairs, "custom", custom_mapping=mapping) == {
+        ("train", "a"): "val",
+        ("val", "b"): "train",
+        ("test", "c"): "test",
+    }
+    with pytest.raises(ValueError, match="cannot move source test"):
+        assign_splits(pairs, "custom", custom_mapping=mapping | {"test/c": "train"})
+    with pytest.raises(ValueError, match="positive"):
+        SamplingConfig(positive_stride=0)
+
+    transition_cfg = SamplingConfig(
+        positive_stride=100,
+        negative_stride=100,
+        tiny_densification=False,
+        transition_sampling=True,
+        transition_radius=1,
+        max_train_frames=0,
+        phase_policy="zero",
+    )
+    assert sample_frame_indices(rows, 64, 64, "train", "sequence", transition_cfg) == [0, 9, 10, 11]
+
+
 def test_rng_checkpoint_safe_roundtrip(tmp_path):
     state = rng_state()
     expected = (random.random(), np.random.rand(), torch.rand(2))

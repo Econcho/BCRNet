@@ -1,11 +1,10 @@
-# Full first-version model; all unspecified typed fields use ModelConfig defaults.
 model:
   num_classes: 1
   budget: 16
   core_size: 8
   halo: 4
   width: 64
-  use_detail: true
+  use_detail: false
   use_context: true
   use_tiny: true
   refiner_type: attention

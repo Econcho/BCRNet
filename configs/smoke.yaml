@@ -11,8 +11,13 @@ preprocessing:
 training:
   epochs: 4
   batch_size: 2
+  val_interval: 1
+  patience: 0
+  min_delta: 0.0
+  monitor: AP50_95
+  early_stop_stage: D
+  progress: true
   seed: 42
   amp: false
   lr: 0.001
   probe_probability: 1.0
-
