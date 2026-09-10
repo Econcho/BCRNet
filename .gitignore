@@ -5,7 +5,7 @@ __pycache__/
 .ruff_cache/
 .coverage
 runs/
-data/
+/data/
 *.pt
 *.pth
 *.onnx
