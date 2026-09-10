@@ -10,6 +10,7 @@
 | --- | --- |
 | [BCRNet 从零入门教程](docs/BCRNet入门教程/README.md) | 面向初学者的环境、抽帧、模型流程、训练、测试、消融与排错教程 |
 | [DUT 数据集接入与训练](docs/DUT数据集接入与训练.md) | Pascal VOC DUT 转 COCO、训练、验证和跨数据集实验协议 |
+| [Linux 服务器 DUT 全流程教程](docs/Linux服务器DUT完整训练测试教程.md) | 从 Linux 环境、DUT 原始数据到训练、测试和执行优化对照 |
 | [训练系统现状与 YOLO 对标](docs/训练系统现状与UltralyticsYOLO差距.md) | 当前训练器能力、缺口、优先级和不应改变的 BCRNet 边界 |
 | [环境与快速开始](docs/环境与快速开始.md) | 已创建环境、安装复现、训练/恢复/评估/推理/测速命令 |
 | [BCRNet 详细方案](docs/BCRNet详细方案.md) | 完整 story、实际模块、张量含义、数据流 |
